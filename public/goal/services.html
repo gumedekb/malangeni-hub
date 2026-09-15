@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Malangeni Hub — Services</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1c1b1a;--muted:#6b6864;--line:#e7e4df;--paper:#faf9f7;--card:#ffffff;
+    --accent:#d2452f;--accent-soft:#fbeae6;--gold:#b8842b;--radius:14px;--maxw:1180px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',sans-serif;background:var(--paper);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  header{position:sticky;top:0;z-index:20;background:rgba(250,249,247,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  nav{display:flex;align-items:center;gap:8px;height:70px}
+  .logo{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--ink);display:grid;place-items:center;font-family:'Fraunces',serif;font-weight:800;font-size:15px;letter-spacing:.5px}
+  .nav-links{display:flex;gap:34px;margin:0 auto}
+  .nav-links a{font-size:15px;color:var(--muted);font-weight:500;position:relative;padding:4px 0}
+  .nav-links a.active{color:var(--ink)}
+  .nav-links a.active::after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:2px;background:var(--accent)}
+  .nav-icons{display:flex;gap:18px;align-items:center}
+  .icon{width:22px;height:22px;color:var(--muted);cursor:pointer}
+  .bell{position:relative}
+  .bell::after{content:"";position:absolute;top:1px;right:2px;width:7px;height:7px;background:var(--accent);border-radius:50%;border:1.5px solid var(--paper)}
+  .avatar{width:30px;height:30px;border-radius:50%;background:var(--ink);display:grid;place-items:center;color:#fff;font-size:12px;font-weight:600}
+  .page-head{padding:38px 0 8px}
+  .page-head .eyebrow{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);font-weight:600}
+  .page-head h1{font-family:'Fraunces',serif;font-weight:600;font-size:46px;letter-spacing:-.5px;margin-top:6px}
+  .page-head p{color:var(--muted);margin-top:4px;font-size:15px;max-width:560px}
+  .sponsor{margin-top:26px;border:1px dashed var(--line);background:repeating-linear-gradient(45deg,#fff,#fff 12px,#fcfbf9 12px,#fcfbf9 24px);border-radius:var(--radius);padding:18px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .sponsor .lbl{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+  .sponsor .pitch{font-family:'Fraunces',serif;font-size:18px;font-weight:600;color:var(--muted)}
+  footer{margin-top:50px;border-top:1px solid var(--line);padding:26px 0;color:var(--muted);font-size:13px;text-align:center}
+  .eyebrow{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);font-weight:600}
+  @media(max-width:920px){.nav-links{display:none}}
+  @media(max-width:600px){.page-head h1{font-size:34px}.sponsor{flex-direction:column;align-items:flex-start}}
+
+  /* ---- Services-specific ---- */
+  .s-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:26px}
+  .svc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px;display:flex;flex-direction:column;transition:.15s}
+  .svc:hover{box-shadow:0 6px 22px rgba(0,0,0,.07);transform:translateY(-2px)}
+  .svc .ic{width:46px;height:46px;border-radius:11px;background:var(--accent-soft);display:grid;place-items:center;font-size:22px;margin-bottom:14px}
+  .svc h3{font-family:'Fraunces',serif;font-size:19px;font-weight:600;margin-bottom:6px}
+  .svc p{font-size:13.5px;color:var(--muted);flex:1}
+  .svc .meta{display:flex;align-items:center;gap:8px;margin:14px 0 0;font-size:12px;color:var(--muted)}
+  .svc .dot{width:7px;height:7px;border-radius:50%}
+  .svc .open .dot,.dot.open{background:#5a9d4f}
+  .svc .busy .dot,.dot.busy{background:var(--gold)}
+  .svc .action{margin-top:14px;border:1px solid var(--ink);background:none;color:var(--ink);font-family:inherit;font-weight:600;font-size:13.5px;padding:10px;border-radius:9px;cursor:pointer;transition:.15s}
+  .svc .action:hover{background:var(--ink);color:#fff}
+  .svc.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .svc.primary .ic{background:rgba(255,255,255,.12)}
+  .svc.primary p,.svc.primary .meta{color:rgba(255,255,255,.7)}
+  .svc.primary .action{border-color:#fff;color:#fff}
+  .svc.primary .action:hover{background:#fff;color:var(--ink)}
+  .badge{display:inline-block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;background:var(--accent);color:#fff;padding:3px 9px;border-radius:20px;align-self:flex-start;margin-bottom:10px}
+
+  /* hours strip */
+  .hours{margin-top:26px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px 24px;display:flex;flex-wrap:wrap;gap:24px;align-items:center}
+  .hours h4{font-family:'Fraunces',serif;font-size:17px;font-weight:600}
+  .hours .item{font-size:13.5px;color:var(--muted)}
+  .hours .item b{color:var(--ink);font-weight:600}
+
+  @media(max-width:920px){.s-grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:600px){.s-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><nav>
+<a href="malangeni-home.html" class="logo">MB</a>
+<div class="nav-links">
+<a href="malangeni-home.html">Home</a>
+<a href="explore.html">Explore</a>
+<a href="community.html">Community</a>
+<a href="services.html" class="active">Services</a>
+</div>
+<div class="nav-icons">
+<svg class="icon bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+<div class="avatar">You</div>
+</div>
+</nav></div></header>
+<main class="wrap">
+  <section class="page-head">
+    <span class="eyebrow">What we offer</span>
+    <h1>Services</h1>
+    <p>Everything available at Malangeni Library — book a space, get help, or use a facility.</p>
+  </section>
+
+  <section class="s-grid">
+    <article class="svc primary">
+      <span class="badge">Popular</span>
+      <div class="ic">📖</div>
+      <h3>Book a study room</h3>
+      <p>Reserve a quiet room for individual or group study. Free for members, up to 3 hours per session.</p>
+      <div class="meta open"><span class="dot"></span> 4 of 8 rooms free now</div>
+      <button class="action">Reserve a room</button>
+    </article>
+
+    <article class="svc">
+      <div class="ic">🖨️</div>
+      <h3>Print & copy</h3>
+      <p>Black & white and colour printing, scanning and photocopying at the front desk.</p>
+      <div class="meta open"><span class="dot"></span> Available</div>
+      <button class="action">See rates</button>
+    </article>
+
+    <article class="svc">
+      <div class="ic">💻</div>
+      <h3>Computer & Wi-Fi</h3>
+      <p>Free public computers and high-speed internet. Bring your card to log on.</p>
+      <div class="meta busy"><span class="dot"></span> Busy — 2 PCs free</div>
+      <button class="action">Check availability</button>
+    </article>
+
+    <article class="svc">
+      <div class="ic">🎓</div>
+      <h3>Tutoring programme</h3>
+      <p>Free afternoon tutoring for matric learners in maths, science and English.</p>
+      <div class="meta open"><span class="dot"></span> Mon–Thu, 3–5 PM</div>
+      <button class="action">Sign up</button>
+    </article>
+
+    <article class="svc">
+      <div class="ic">📚</div>
+      <h3>Borrow & return</h3>
+      <p>Browse the catalogue, reserve titles online, and pick them up at the desk.</p>
+      <div class="meta open"><span class="dot"></span> Catalogue online</div>
+      <button class="action">Search catalogue</button>
+    </article>
+
+    <article class="svc">
+      <div class="ic">🏛️</div>
+      <h3>Hall hire</h3>
+      <p>Book the main hall for community meetings, workshops or events.</p>
+      <div class="meta busy"><span class="dot"></span> Booked this weekend</div>
+      <button class="action">Request booking</button>
+    </article>
+  </section>
+
+  <section class="hours">
+    <h4>Opening hours</h4>
+    <span class="item"><b>Mon–Fri</b> · 8:00 AM – 8:00 PM</span>
+    <span class="item"><b>Saturday</b> · 9:00 AM – 1:00 PM</span>
+    <span class="item"><b>Sunday</b> · Closed</span>
+    <span class="item" style="margin-left:auto"><span class="dot open" style="display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px"></span><b>Open now</b></span>
+  </section>
+
+  <section class="sponsor">
+    <span class="lbl">Sponsored</span>
+    <span class="pitch">Reach people who use the library every day</span>
+    <span class="lbl">728 × 90</span>
+  </section>
+</main>
+<footer>Malangeni Hub · Built for the community</footer>
+</body>
+</html>

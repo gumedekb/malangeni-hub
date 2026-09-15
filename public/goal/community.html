@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Malangeni Hub — Community</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1c1b1a;--muted:#6b6864;--line:#e7e4df;--paper:#faf9f7;--card:#ffffff;
+    --accent:#d2452f;--accent-soft:#fbeae6;--gold:#b8842b;--radius:14px;--maxw:1180px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',sans-serif;background:var(--paper);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  header{position:sticky;top:0;z-index:20;background:rgba(250,249,247,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  nav{display:flex;align-items:center;gap:8px;height:70px}
+  .logo{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--ink);display:grid;place-items:center;font-family:'Fraunces',serif;font-weight:800;font-size:15px;letter-spacing:.5px}
+  .nav-links{display:flex;gap:34px;margin:0 auto}
+  .nav-links a{font-size:15px;color:var(--muted);font-weight:500;position:relative;padding:4px 0}
+  .nav-links a.active{color:var(--ink)}
+  .nav-links a.active::after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:2px;background:var(--accent)}
+  .nav-icons{display:flex;gap:18px;align-items:center}
+  .icon{width:22px;height:22px;color:var(--muted);cursor:pointer}
+  .bell{position:relative}
+  .bell::after{content:"";position:absolute;top:1px;right:2px;width:7px;height:7px;background:var(--accent);border-radius:50%;border:1.5px solid var(--paper)}
+  .avatar{width:30px;height:30px;border-radius:50%;background:var(--ink);display:grid;place-items:center;color:#fff;font-size:12px;font-weight:600}
+  .page-head{padding:38px 0 8px}
+  .page-head .eyebrow{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);font-weight:600}
+  .page-head h1{font-family:'Fraunces',serif;font-weight:600;font-size:46px;letter-spacing:-.5px;margin-top:6px}
+  .page-head p{color:var(--muted);margin-top:4px;font-size:15px;max-width:560px}
+  .sponsor{margin-top:26px;border:1px dashed var(--line);background:repeating-linear-gradient(45deg,#fff,#fff 12px,#fcfbf9 12px,#fcfbf9 24px);border-radius:var(--radius);padding:18px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .sponsor .lbl{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+  .sponsor .pitch{font-family:'Fraunces',serif;font-size:18px;font-weight:600;color:var(--muted)}
+  footer{margin-top:50px;border-top:1px solid var(--line);padding:26px 0;color:var(--muted);font-size:13px;text-align:center}
+  .eyebrow{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);font-weight:600}
+  @media(max-width:920px){.nav-links{display:none}}
+  @media(max-width:600px){.page-head h1{font-size:34px}.sponsor{flex-direction:column;align-items:flex-start}}
+
+  /* ---- Community-specific ---- */
+  .c-layout{display:grid;grid-template-columns:1fr 320px;gap:24px;margin-top:26px;align-items:start}
+
+  /* composer */
+  .composer{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;gap:12px;align-items:center}
+  .composer .av{width:38px;height:38px;border-radius:50%;background:var(--gold);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:600;flex-shrink:0}
+  .composer input{flex:1;border:1px solid var(--line);border-radius:24px;padding:11px 16px;font-family:inherit;font-size:14px;background:var(--paper)}
+  .composer button{background:var(--accent);color:#fff;border:0;border-radius:24px;padding:11px 18px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer}
+
+  .discussions{margin-top:18px;display:flex;flex-direction:column;gap:16px}
+  .thread{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;transition:.15s}
+  .thread:hover{box-shadow:0 4px 16px rgba(0,0,0,.05)}
+  .thread .top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .thread .av{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:12px;font-weight:600}
+  .thread .who{font-size:14px;font-weight:600}
+  .thread .when{font-size:12px;color:var(--muted)}
+  .thread .grp{margin-left:auto;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--gold);background:#f6efe2;padding:3px 9px;border-radius:20px}
+  .thread h3{font-family:'Fraunces',serif;font-size:18px;font-weight:600;margin-bottom:5px}
+  .thread p{font-size:14px;color:var(--muted)}
+  .thread .foot{display:flex;gap:18px;margin-top:12px;font-size:12.5px;color:var(--muted)}
+  .thread .foot span{cursor:pointer}
+
+  /* sidebar */
+  .side{display:flex;flex-direction:column;gap:20px;position:sticky;top:86px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}
+  .card h4{font-family:'Fraunces',serif;font-size:16px;font-weight:600;margin-bottom:12px}
+  .group{display:flex;align-items:center;gap:11px;padding:8px 0;border-top:1px solid var(--line)}
+  .group:first-of-type{border-top:0}
+  .group .ic{width:34px;height:34px;border-radius:9px;background:var(--accent-soft);display:grid;place-items:center;font-size:15px}
+  .group .gname{font-size:14px;font-weight:600}
+  .group .gmeta{font-size:12px;color:var(--muted)}
+  .group .join{margin-left:auto;font-size:12px;font-weight:600;color:var(--accent);border:1px solid var(--accent);background:none;border-radius:18px;padding:5px 12px;cursor:pointer}
+  .members{display:flex;align-items:center}
+  .members .m{width:32px;height:32px;border-radius:50%;border:2px solid var(--card);margin-left:-8px;display:grid;place-items:center;color:#fff;font-size:11px;font-weight:600}
+  .members .more{margin-left:10px;font-size:13px;color:var(--muted)}
+  .ad-side{border:1px dashed var(--accent);background:var(--accent-soft);text-align:center;padding:26px 18px;border-radius:12px}
+  .ad-side .lbl{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);font-weight:600}
+  .ad-side h4{font-family:'Fraunces',serif;margin:8px 0 4px}
+  .ad-side p{font-size:13px;color:var(--muted)}
+
+  @media(max-width:920px){.c-layout{grid-template-columns:1fr}.side{position:static;flex-direction:row;flex-wrap:wrap}.side .card{flex:1;min-width:240px}}
+  @media(max-width:600px){.side{flex-direction:column}.composer button{padding:11px 12px}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><nav>
+<a href="malangeni-home.html" class="logo">MB</a>
+<div class="nav-links">
+<a href="malangeni-home.html">Home</a>
+<a href="explore.html">Explore</a>
+<a href="community.html" class="active">Community</a>
+<a href="services.html">Services</a>
+</div>
+<div class="nav-icons">
+<svg class="icon bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+<div class="avatar">You</div>
+</div>
+</nav></div></header>
+<main class="wrap">
+  <section class="page-head">
+    <span class="eyebrow">Together</span>
+    <h1>Community</h1>
+    <p>Share notices, ask questions, and connect with people around Malangeni.</p>
+  </section>
+
+  <div class="c-layout">
+    <div>
+      <div class="composer">
+        <div class="av">You</div>
+        <input type="text" placeholder="Share something with the community…">
+        <button>Post</button>
+      </div>
+
+      <div class="discussions">
+        <article class="thread">
+          <div class="top">
+            <div class="av" style="background:#3f6e8c">TM</div>
+            <div><div class="who">Thabo M.</div><div class="when">2 hours ago</div></div>
+            <span class="grp">Students</span>
+          </div>
+          <h3>Anyone forming a matric study group?</h3>
+          <p>Looking for 3–4 people to meet at the library on weekday afternoons. Mostly maths and physical science.</p>
+          <div class="foot"><span>♥ 18 likes</span><span>💬 12 replies</span><span>↗ Share</span></div>
+        </article>
+
+        <article class="thread">
+          <div class="top">
+            <div class="av" style="background:var(--gold)">LN</div>
+            <div><div class="who">Library Notices</div><div class="when">5 hours ago</div></div>
+            <span class="grp">Official</span>
+          </div>
+          <h3>Extended hours during exam season</h3>
+          <p>From next week the library stays open until 8 PM on weekdays. Bring your student card for after-hours access.</p>
+          <div class="foot"><span>♥ 64 likes</span><span>💬 9 replies</span><span>↗ Share</span></div>
+        </article>
+
+        <article class="thread">
+          <div class="top">
+            <div class="av" style="background:#7d5a3f">PZ</div>
+            <div><div class="who">Phume Z.</div><div class="when">Yesterday</div></div>
+            <span class="grp">Gardening</span>
+          </div>
+          <h3>Free seedlings this Saturday</h3>
+          <p>The garden club has spinach and tomato seedlings to give away. First come, first served at the back entrance.</p>
+          <div class="foot"><span>♥ 41 likes</span><span>💬 6 replies</span><span>↗ Share</span></div>
+        </article>
+      </div>
+    </div>
+
+    <aside class="side">
+      <div class="card">
+        <h4>Popular groups</h4>
+        <div class="group"><div class="ic">📚</div><div><div class="gname">Students</div><div class="gmeta">412 members</div></div><button class="join">Join</button></div>
+        <div class="group"><div class="ic">🌱</div><div><div class="gname">Gardening</div><div class="gmeta">128 members</div></div><button class="join">Join</button></div>
+        <div class="group"><div class="ic">⚽</div><div><div class="gname">Sports</div><div class="gmeta">256 members</div></div><button class="join">Join</button></div>
+      </div>
+
+      <div class="card">
+        <h4>New members</h4>
+        <div class="members">
+          <div class="m" style="background:#3f6e8c">SD</div>
+          <div class="m" style="background:var(--accent)">NK</div>
+          <div class="m" style="background:var(--gold)">BM</div>
+          <div class="m" style="background:#5a7d3f">LT</div>
+          <span class="more">+38 this week</span>
+        </div>
+      </div>
+
+      <div class="ad-side">
+        <div class="lbl">Sponsored</div>
+        <h4>Local Spaza & Co.</h4>
+        <p>Support the businesses that keep Malangeni running.</p>
+      </div>
+    </aside>
+  </div>
+</main>
+<footer>Malangeni Hub · Built for the community</footer>
+</body>
+</html>
