@@ -10,9 +10,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 /**
  * Initialises the Firebase Admin SDK once at startup.
@@ -33,6 +36,13 @@ public class FirebaseConfig {
     @Value("${firebase.credentials-path:firebase-key.json}")
     private String credentialsPath;
 
+    /**
+     * The key file's contents, as raw JSON or base64 (FIREBASE_CREDENTIALS_JSON). For hosts where
+     * mounting a file is awkward, e.g. Render. Takes priority over the file when set.
+     */
+    @Value("${firebase.credentials-json:}")
+    private String credentialsJson;
+
     @Bean
     public FirebaseApp firebaseApp() throws IOException {
         // Spring DevTools restarts the context in place; initializeApp() throws if called twice.
@@ -40,21 +50,37 @@ public class FirebaseConfig {
             return FirebaseApp.getInstance();
         }
 
-        File keyFile = new File(credentialsPath);
-        GoogleCredentials credentials;
-        if (keyFile.exists()) {
-            try (FileInputStream in = new FileInputStream(keyFile)) {
-                credentials = GoogleCredentials.fromStream(in);
-            }
-            log.info("Firebase initialised from key file: {}", credentialsPath);
-        } else {
-            credentials = GoogleCredentials.getApplicationDefault();
-            log.info("Firebase initialised from Application Default Credentials");
+        return FirebaseApp.initializeApp(FirebaseOptions.builder()
+                .setCredentials(loadCredentials())
+                .build());
+    }
+
+    /** 1. FIREBASE_CREDENTIALS_JSON, 2. the key file, 3. Application Default Credentials (Cloud Run). */
+    private GoogleCredentials loadCredentials() throws IOException {
+        if (credentialsJson != null && !credentialsJson.isBlank()) {
+            String value = credentialsJson.trim();
+            byte[] json = value.startsWith("{")
+                    ? value.getBytes(StandardCharsets.UTF_8)
+                    : Base64.getDecoder().decode(value.replaceAll("\\s", ""));
+            log.info("Firebase initialised from FIREBASE_CREDENTIALS_JSON");
+            return GoogleCredentials.fromStream(new ByteArrayInputStream(json));
         }
 
-        return FirebaseApp.initializeApp(FirebaseOptions.builder()
-                .setCredentials(credentials)
-                .build());
+        File keyFile = new File(credentialsPath);
+        if (keyFile.isFile()) {
+            if (!keyFile.canRead()) {
+                throw new IllegalStateException("Firebase key file exists but this process can't read it: " + credentialsPath);
+            }
+            try (FileInputStream in = new FileInputStream(keyFile)) {
+                log.info("Firebase initialised from key file: {}", credentialsPath);
+                return GoogleCredentials.fromStream(in);
+            }
+        }
+
+        // Says exactly what was looked for, so a missing secret isn't mistaken for a Google problem.
+        log.warn("No Firebase key file at {} and FIREBASE_CREDENTIALS_JSON is not set; "
+                + "trying Application Default Credentials (only available on Google Cloud)", credentialsPath);
+        return GoogleCredentials.getApplicationDefault();
     }
 
     @Bean

@@ -1,7 +1,7 @@
 # Render Blueprint for the Malangeni Hub backend (Spring Boot, built from its Dockerfile).
 # Render → New → Blueprint → pick this repo. You'll be asked for every `sync: false` value.
-# Add the Firebase key yourself afterwards: service → Environment → Secret Files →
-# filename `firebase-key.json`, paste the contents of your local firebase-key.json.
+# Firebase key: paste it into FIREBASE_CREDENTIALS_JSON (raw JSON or base64), or add a Secret
+# File named exactly `firebase-key.json` (service → Environment → Secret Files).
 services:
   - type: web
     name: malangeni-hub-api
@@ -33,7 +33,10 @@ services:
       # The frontend's address, e.g. https://malangeni-hub.vercel.app (comma-separate several).
       - key: CORS_ALLOWED_ORIGINS
         sync: false
-      # Where Render mounts the Secret File described above.
+      # The Firebase service-account key's contents (raw JSON or base64). Wins over the file.
+      - key: FIREBASE_CREDENTIALS_JSON
+        sync: false
+      # Where Render mounts a Secret File, if you use that instead.
       - key: FIREBASE_CREDENTIALS_PATH
         value: /etc/secrets/firebase-key.json
       # Neon's free tier caps connections; keep the pool small.
