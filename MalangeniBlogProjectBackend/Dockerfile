@@ -35,12 +35,15 @@ COPY --from=build /build/target/*.jar app.jar
 RUN chown spring:spring app.jar
 USER spring
 
-# Documentation only - it publishes nothing by itself. Cloud Run injects PORT
+# Documentation only - it publishes nothing by itself. Render and Cloud Run inject PORT
 # and the app reads it via server.port=${PORT:8080}.
 EXPOSE 8080
 
-# -XX:MaxRAMPercentage=75 - the JVM's default heap sizing misreads a
-#   memory-capped container and the process gets OOM-killed under load.
-# Exec form (JSON array) so the JVM runs as PID 1 and actually receives
-#   Cloud Run's SIGTERM, giving Spring a clean shutdown instead of a hard kill.
-ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75", "-jar", "app.jar"]
+# JVM flags, overridable per host (render.yaml sets a smaller heap for a 512 MB plan).
+# -XX:MaxRAMPercentage - the JVM's default heap sizing misreads a memory-capped
+#   container and the process gets OOM-killed under load.
+ENV JAVA_OPTS="-XX:MaxRAMPercentage=75"
+
+# `exec` replaces the shell, so the JVM runs as PID 1 and receives the host's SIGTERM,
+# giving Spring a clean shutdown instead of a hard kill.
+ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar app.jar"]

@@ -95,6 +95,8 @@
 - Port read from the `PORT` env var.
 - `prod` profile: quiet logs, no local defaults, health probes, Swagger UI off (still on locally at `:8080/swagger-ui/index.html`).
 - Docker image tested locally against Neon.
+- Render Blueprint (`render.yaml` at the repo root): Docker build of this folder, prod profile, health check, secrets asked for on setup.
+- CORS origins come from `CORS_ALLOWED_ORIGINS`; JVM flags from `JAVA_OPTS`.
 - Demo data seeder and `/api/admin/demo-data` removed. Database cleared on 2026-09-15, keeping only the admin/dev accounts and the library details.
 
 ## To do
@@ -122,15 +124,13 @@
 - [ ] Same pagination and sorting params on every list.
 - [ ] README: setup and endpoint map.
 
-### Deploy (Cloud Run)
-- [ ] Put `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` and `CLOUDINARY_URL` in Secret Manager.
-- [ ] Push the image to Artifact Registry, tagged with the git SHA.
-- [ ] Deploy to Cloud Run (`africa-south1`, 1Gi, min 0 instances, CPU boost).
-- [ ] Startup probe on `/actuator/health` with a long delay.
-- [ ] Set the real frontend origin in `CorsConfig`.
-- [ ] Smoke-test the live API.
-- [ ] Later: CI/CD, custom domain, Cloud Armor.
-- [ ] If moving to Cloud SQL: Cloud SQL socket factory and `roles/cloudsql.client`.
+### Deploy (Render)
+- [ ] Create the service from `render.yaml` (Render → New → Blueprint) and fill in the secret values.
+- [ ] Add `firebase-key.json` as a Secret File.
+- [ ] Set `CORS_ALLOWED_ORIGINS` to the frontend's address once it's deployed.
+- [ ] Smoke-test the live API: `/actuator/health`, sign in, create a post.
+- [ ] Move off the free plan before launch (it sleeps after 15 idle minutes).
+- [ ] Later: custom domain, CI checks before deploy.
 
 ### Later
 - [ ] `bio` field on `User`.

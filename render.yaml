@@ -1,0 +1,44 @@
+# Render Blueprint for the Malangeni Hub backend (Spring Boot, built from its Dockerfile).
+# Render → New → Blueprint → pick this repo. You'll be asked for every `sync: false` value.
+# Add the Firebase key yourself afterwards: service → Environment → Secret Files →
+# filename `firebase-key.json`, paste the contents of your local firebase-key.json.
+services:
+  - type: web
+    name: malangeni-hub-api
+    runtime: docker
+    # Only changes to the backend folder redeploy it; the frontend lives next to it.
+    rootDir: MalangeniBlogProjectBackend
+    # Both paths are relative to the repo root.
+    dockerfilePath: ./MalangeniBlogProjectBackend/Dockerfile
+    dockerContext: ./MalangeniBlogProjectBackend
+    # The Neon database is in AWS São Paulo and every request makes several queries, so the API
+    # sits in the Render region nearest to it rather than nearest to the users.
+    region: virginia
+    # Free sleeps after 15 idle minutes (about a minute to wake). Upgrade before launch.
+    plan: free
+    healthCheckPath: /actuator/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      # Same values as MalangeniBlogProjectBackend/.env.local.
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: CLOUDINARY_URL
+        sync: false
+      # The frontend's address, e.g. https://malangeni-hub.vercel.app (comma-separate several).
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      # Where Render mounts the Secret File described above.
+      - key: FIREBASE_CREDENTIALS_PATH
+        value: /etc/secrets/firebase-key.json
+      # Neon's free tier caps connections; keep the pool small.
+      - key: DB_POOL_SIZE
+        value: "5"
+      # Sized for the free plan's 512 MB: smaller heap, lighter GC and JIT (also starts faster).
+      - key: JAVA_OPTS
+        value: "-XX:MaxRAMPercentage=60 -XX:MaxMetaspaceSize=192m -XX:+UseSerialGC -XX:TieredStopAtLevel=1 -Xss512k"
