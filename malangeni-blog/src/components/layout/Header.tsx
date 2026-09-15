@@ -5,13 +5,17 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Container } from "./Container";
 import { UserMenu } from "./UserMenu";
-import { MobileNav } from "./MobileNav";
 import { NotificationBell } from "./NotificationBell";
 import { ThemeToggle } from "./ThemeToggle";
 import { NAV_LINKS } from "@/lib/nav";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { createPostHref } from "@/lib/posts";
 
+/**
+ * The top bar. Desktop: logo, the four sections, Create post, theme, bell and
+ * account. Phones: the logo (left), theme and bell (right) — everything else
+ * lives in the floating menu button (`MobileNav`).
+ */
 export function Header() {
   const pathname = usePathname();
   const { profile } = useAuth();
@@ -53,7 +57,6 @@ export function Header() {
     <header className="sticky top-0 z-20 border-b border-line bg-paper/85 backdrop-blur-[10px]">
       <Container>
         <nav className="flex h-[70px] items-center gap-2">
-          <MobileNav />
           <Link
             href="/"
             aria-label="Malangeni Hub home"
@@ -94,7 +97,7 @@ export function Header() {
               <Link
                 href={createPostHref(pathname)}
                 aria-label="Create a post"
-                className="inline-flex items-center gap-1.5 rounded-full bg-accent px-2.5 py-2 text-[13px] font-semibold text-white transition hover:opacity-95 sm:px-3.5"
+                className="hidden items-center gap-1.5 rounded-full bg-accent px-3.5 py-2 text-[13px] font-semibold text-white transition hover:opacity-95 md:inline-flex"
               >
                 <svg
                   className="size-4"
@@ -107,12 +110,14 @@ export function Header() {
                 >
                   <path d="M12 5v14M5 12h14" />
                 </svg>
-                <span className="hidden sm:inline">Create post</span>
+                Create post
               </Link>
             )}
             <ThemeToggle />
             <NotificationBell />
-            <UserMenu />
+            <span className="hidden md:contents">
+              <UserMenu />
+            </span>
           </div>
         </nav>
       </Container>

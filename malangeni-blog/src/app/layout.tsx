@@ -4,6 +4,7 @@ import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { NavigationProgress } from "@/components/layout/NavigationProgress";
+import { MobileNav } from "@/components/layout/MobileNav";
 import { AuthProvider } from "@/lib/auth/AuthContext";
 import { OnboardingGate } from "@/components/auth/OnboardingGate";
 import { NotificationsProvider } from "@/lib/notifications/NotificationsContext";
@@ -59,7 +60,8 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }}
         />
       </head>
-      <body className="font-sans leading-normal">
+      {/* Room at the bottom on phones so the floating menu button never covers the footer. */}
+      <body className="font-sans leading-normal max-md:pb-24">
         <AuthProvider>
           <NotificationsProvider>
             <OnboardingGate />
@@ -67,6 +69,8 @@ export default function RootLayout({
             <Header />
             {children}
             <Footer />
+            {/* Phones: the floating menu button (outside the header on purpose — see MobileNav). */}
+            <MobileNav />
           </NotificationsProvider>
         </AuthProvider>
       </body>
