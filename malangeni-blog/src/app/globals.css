@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+/*
+  Malangeni Hub — design tokens (Tailwind v4, CSS-first config)
+  These map the reference palette + fonts to Tailwind utilities:
+    bg-ink / text-muted / border-line / bg-accent-soft ...
+    font-serif (Fraunces) / font-sans (Inter)
+    rounded-card
+  Custom breakpoints match the reference designs (600px / 920px).
+  Font CSS variables (--font-fraunces / --font-inter) are set in layout.tsx.
+
+  Dark mode: the `.dark` class on <html> (set before first paint by the inline
+  script in layout.tsx) swaps the colour tokens below, so every utility built
+  on them follows automatically. `dark:` variants key off the same class.
+*/
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-ink: #1c1b1a;
+  --color-muted: #6b6864;
+  --color-line: #e7e4df;
+  --color-paper: #faf9f7;
+  --color-paper-warm: #f6f2ec;
+  --color-card: #ffffff;
+  --color-on-ink: #ffffff;
+  --color-accent: #d2452f;
+  --color-accent-soft: #fbeae6;
+  --color-gold: #b8842b;
+  --color-tag: #f6efe2;
+  --color-info: #16729a;
+  --color-info-soft: #e3f3fb;
+  --color-open: #5a9d4f;
+  --color-fun: #5a7d3f;
+  --color-fun-soft: #eef3ea;
+
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-serif: var(--font-fraunces), Georgia, serif;
+
+  --radius-card: 14px;
+
+  --breakpoint-sm: 600px;
+  --breakpoint-md: 920px;
+  --breakpoint-lg: 1180px;
+}
+
+/* Warm charcoal palette — same hues as light mode, lifted for contrast. */
+:root.dark {
+  --color-ink: #f2eee8;
+  --color-muted: #a8a29a;
+  --color-line: #34312d;
+  --color-paper: #141312;
+  --color-paper-warm: #23201c;
+  --color-card: #1d1b19;
+  --color-on-ink: #141312;
+  --color-accent: #e25c44;
+  --color-accent-soft: #3b211b;
+  --color-gold: #d9a74a;
+  --color-tag: #2e2619;
+  --color-info: #6cc3e8;
+  --color-info-soft: #13303d;
+  --color-open: #6fbf62;
+  --color-fun: #93b874;
+  --color-fun-soft: #1e2a19;
+}
+
+:root {
+  color-scheme: light;
+}
+:root.dark {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Fallback theme switch (no View Transitions API): fade colours briefly. */
+:root.theme-fade,
+:root.theme-fade *,
+:root.theme-fade *::before,
+:root.theme-fade *::after {
+  transition:
+    background-color 350ms ease,
+    border-color 350ms ease,
+    color 350ms ease,
+    fill 350ms ease !important;
+}
+
+/* View Transitions switch: the new theme is revealed by a circle animated in JS. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
