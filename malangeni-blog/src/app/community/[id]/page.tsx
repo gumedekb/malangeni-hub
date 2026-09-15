@@ -17,7 +17,12 @@ type Props = { params: Promise<{ id: string }> };
  */
 async function loadPost(id: string): Promise<ApiPost | "missing" | null> {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/posts/${encodeURIComponent(id)}`, { cache: "no-store" });
+    // A sleeping backend (Render's free plan) can take a minute to wake; don't hold the page
+    // hostage for a link preview — fall back to generic metadata after a few seconds.
+    const res = await fetch(`${API_BASE_URL}/api/posts/${encodeURIComponent(id)}`, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(5000),
+    });
     if (res.status === 404) return "missing";
     if (!res.ok) return null;
     return (await res.json()) as ApiPost;
