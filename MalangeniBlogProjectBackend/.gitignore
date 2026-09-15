@@ -1,0 +1,51 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+.kotlin
+
+### IntelliJ IDEA ###
+.idea/modules.xml
+.idea/jarRepositories.xml
+.idea/compiler.xml
+.idea/libraries/
+*.iws
+*.iml
+*.ipr
+
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
+
+# Firebase service account keys - full admin access to the Firebase/GCP project.
+# Patterns cover both the name Google downloads it under and the name we rename it to.
+firebase-key.json
+*firebase-adminsdk*
+*-adminsdk-*
+
+# Environment variables / local secrets.
+# Wildcard on purpose: a literal ".env.local" would leave .env, .env.production and
+# stray copies like ".env.local.bak" tracked, which is how credentials get committed.
+.env
+.env.*
