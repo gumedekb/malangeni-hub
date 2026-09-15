@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api, STAFF_ENDPOINTS } from "@/lib/api";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { RequireAuth } from "@/components/auth/RequireAuth";
@@ -11,6 +11,7 @@ import {
   type StaffUser,
 } from "@/lib/auth/types";
 import { hoursLabel } from "@/lib/shops";
+import { nameOf } from "@/lib/users";
 import type { Shop } from "@/lib/types";
 import { EventsAdmin } from "./EventsAdmin";
 import { GroupsAdmin } from "./GroupsAdmin";
@@ -476,13 +477,14 @@ function ListingsReview() {
 // Team (admins only)
 // ---------------------------------------------------------------------------
 
+/**
+ * The hub team (admins and moderators only — the backend filters by role), and
+ * a search to find one member to promote, instead of listing everyone.
+ */
 function TeamList() {
-  const [pageNo, setPageNo] = useState(0);
   const [reload, setReload] = useState(0);
-  const { page, error } = usePage<StaffUser>(STAFF_ENDPOINTS.users(pageNo), reload);
-
-  if (error) return <Note>{error}</Note>;
-  if (!page) return <Note>Loading…</Note>;
+  const { page, error } = usePage<StaffUser>(STAFF_ENDPOINTS.team, reload);
+  const changed = () => setReload((n) => n + 1);
 
   return (
     <section>
@@ -491,13 +493,86 @@ function TeamList() {
         changed here. Moderators carry the Hub team badge: they can verify
         businesses, approve listings, ban posters and manage content.
       </p>
-      <Table head={["Member", "Role", "Joined", ""]} minWidth={640}>
-        {page.content.map((u) => (
-          <TeamRow key={u.id} user={u} onChanged={() => setReload((n) => n + 1)} />
-        ))}
-      </Table>
-      <Pager page={page} onPage={setPageNo} />
+
+      <h3 className="mb-3 font-serif text-[18px] font-semibold">The hub team</h3>
+      {error ? (
+        <Note>{error}</Note>
+      ) : !page ? (
+        <Note>Loading…</Note>
+      ) : (
+        <Table head={["Member", "Role", "Joined", ""]} minWidth={640}>
+          {page.content.map((u) => (
+            <TeamRow key={u.id} user={u} onChanged={changed} />
+          ))}
+        </Table>
+      )}
+
+      <FindMember reload={reload} onChanged={changed} />
     </section>
+  );
+}
+
+/** Look one member up by name, username or email to make them a moderator. */
+function FindMember({ reload, onChanged }: { reload: number; onChanged: () => void }) {
+  const [query, setQuery] = useState("");
+  // Tagged with the search they answer, so a slow reply never shows under a newer term.
+  const [results, setResults] = useState<{ term: string; users: StaffUser[] } | null>(null);
+  const [error, setError] = useState<{ term: string; message: string } | null>(null);
+  const term = query.trim();
+
+  // Searches a moment after typing stops, and again after a role change (`reload`).
+  useEffect(() => {
+    if (term.length < 2) return;
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      void (async () => {
+        try {
+          const users = await api.get<StaffUser[]>(STAFF_ENDPOINTS.searchUsers(term));
+          if (!cancelled) setResults({ term, users: users ?? [] });
+        } catch (err) {
+          if (!cancelled) setError({ term, message: err instanceof Error ? err.message : "Search failed." });
+        }
+      })();
+    }, 300);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [term, reload]);
+
+  const found = results && results.term === term ? results.users : null;
+  const failed = error && error.term === term ? error.message : null;
+
+  return (
+    <div className="mt-8">
+      <h3 className="font-serif text-[18px] font-semibold">Add a moderator</h3>
+      <p className="mb-3 mt-1 text-[13px] text-muted">Search for the member by name, username or email.</p>
+      <input
+        type="search"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="e.g. thabo or thabo@gmail.com"
+        aria-label="Find a member"
+        className={INPUT_CLASS}
+      />
+      {term.length >= 2 && (
+        <div className="mt-3">
+          {failed ? (
+            <p role="alert" className="text-[13px] text-accent">{failed}</p>
+          ) : !found ? (
+            <p className="text-[13px] text-muted">Searching…</p>
+          ) : found.length === 0 ? (
+            <p className="text-[13px] text-muted">No member matches “{term}”.</p>
+          ) : (
+            <Table head={["Member", "Role", "Joined", ""]} minWidth={640}>
+              {found.map((u) => (
+                <TeamRow key={u.id} user={u} onChanged={onChanged} />
+              ))}
+            </Table>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -537,8 +612,10 @@ function TeamRow({ user, onChanged }: { user: StaffUser; onChanged: () => void }
   return (
     <tr className="border-b border-line last:border-0">
       <td className="px-4 py-3">
-        <div className="font-semibold">{user.username}</div>
-        <div className="text-[12px] text-muted">{user.email}</div>
+        <div className="font-semibold">{nameOf(user)}</div>
+        <div className="text-[12px] text-muted">
+          @{user.username} · {user.email}
+        </div>
         {error && <div className="mt-1 text-[12px] text-accent">{error}</div>}
       </td>
       <td className="px-4 py-3">

@@ -1,9 +1,9 @@
 package co.za.malangeniblog.service;
 
 import co.za.malangeniblog.domain.LibraryInfo;
-import co.za.malangeniblog.exception.BadRequestException;
 import co.za.malangeniblog.repository.LibraryInfoRepository;
 import co.za.malangeniblog.security.SecurityUtil;
+import co.za.malangeniblog.util.OpeningHours;
 import co.za.malangeniblog.util.RepositoryValidationHelper;
 import co.za.malangeniblog.util.ValidationUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 @Service
 public class LibraryInfoService {
@@ -41,9 +40,9 @@ public class LibraryInfoService {
         ValidationUtil.validateMaxLength(input.getLocation(), ValidationUtil.MAX_SHORT_TEXT, "Location");
         ValidationUtil.validateOptionalUrl(input.getMapsUrl(), "Map link");
         ValidationUtil.validateMaxLength(input.getMapsUrl(), 512, "Map link");
-        validateHours(input.getWeekdayOpen(), input.getWeekdayClose(), "Mon-Fri");
-        validateHours(input.getSaturdayOpen(), input.getSaturdayClose(), "Saturday");
-        validateHours(input.getSundayOpen(), input.getSundayClose(), "Sunday");
+        OpeningHours.validate(input.getWeekdayOpen(), input.getWeekdayClose(), "Mon-Fri");
+        OpeningHours.validate(input.getSaturdayOpen(), input.getSaturdayClose(), "Saturday");
+        OpeningHours.validate(input.getSundayOpen(), input.getSundayClose(), "Sunday");
 
         LibraryInfo info = libraryInfoRepository.findById(ID).orElseGet(() -> {
             LibraryInfo created = new LibraryInfo();
@@ -63,16 +62,6 @@ public class LibraryInfoService {
         info.setUpdatedAt(LocalDateTime.now());
         info.setUpdatedByUserId(SecurityUtil.requireCurrentUserId());
         return libraryInfoRepository.save(info);
-    }
-
-    /** Both times or neither (closed), and opening before closing. */
-    private static void validateHours(LocalTime open, LocalTime close, String day) {
-        if ((open == null) != (close == null)) {
-            throw new BadRequestException(day + ": give both opening and closing times, or neither if closed.");
-        }
-        if (open != null && !open.isBefore(close)) {
-            throw new BadRequestException(day + ": opening time must be before closing time.");
-        }
     }
 
     private static String blankToNull(String value) {

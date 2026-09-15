@@ -19,8 +19,37 @@ export interface CommunityEvent {
   imageUrl?: string | null;
 }
 
+/**
+ * Opening hours in three rows, as the library and places store them. Times are
+ * "HH:mm:ss"; a null pair means closed that day, and all six null (places only)
+ * means the hours aren't listed.
+ */
+export interface OpeningHoursFields {
+  weekdayOpen?: string | null;
+  weekdayClose?: string | null;
+  saturdayOpen?: string | null;
+  saturdayClose?: string | null;
+  sundayOpen?: string | null;
+  sundayClose?: string | null;
+}
+
+/** What a pasted Google Maps link says about a place (`POST /api/maps/lookup`). Times are "HH:mm". */
+export interface MapsLookupResult extends OpeningHoursFields {
+  name?: string | null;
+  address?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  mapsUrl?: string | null;
+  hoursFound: boolean;
+  /** Why the hours weren't filled in, or what to double-check. */
+  note?: string | null;
+}
+
 /** A place on Explore, in the shape the cards render. */
-export interface Place {
+export interface Place extends OpeningHoursFields {
+  mapsUrl?: string | null;
+  latitude?: string | null;
+  longitude?: string | null;
   id: string;
   name: string;
   /** Category name from the backend, e.g. "Learning". */
@@ -120,17 +149,11 @@ export interface Page<T> {
 }
 
 /** Malangeni Library details from `/api/library`. Times are "HH:mm:ss"; a null pair means closed. */
-export interface LibraryDetails {
+export interface LibraryDetails extends OpeningHoursFields {
   name: string;
   about?: string | null;
   location?: string | null;
   mapsUrl?: string | null;
-  weekdayOpen?: string | null;
-  weekdayClose?: string | null;
-  saturdayOpen?: string | null;
-  saturdayClose?: string | null;
-  sundayOpen?: string | null;
-  sundayClose?: string | null;
   updatedAt?: string | null;
 }
 
@@ -277,12 +300,16 @@ export interface ApiService {
 }
 
 /** A place on Explore, as the backend's `/api/attractions` returns it. */
-export interface ApiAttraction {
+export interface ApiAttraction extends OpeningHoursFields {
   id: string;
   name: string;
   description?: string | null;
   location: string;
   imageUrl?: string | null;
+  /** The place on Google Maps, for "Get directions". */
+  mapsUrl?: string | null;
+  latitude?: string | null;
+  longitude?: string | null;
   category?: { id: string; name: string } | null;
   averageRating?: number | null;
   ratingCount?: number | null;

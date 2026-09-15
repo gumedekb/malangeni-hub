@@ -5,15 +5,18 @@ import Image from "next/image";
 import { api, ApiError, PLACE_ENDPOINTS } from "@/lib/api";
 import { fitImage } from "@/lib/cloudinary";
 import { IMAGE_ACCEPT, imageProblem, prepareImage } from "@/lib/images";
-import type { ApiAttraction, ApiCategory } from "@/lib/types";
+import { hasHours } from "@/lib/library";
+import type { ApiAttraction, ApiCategory, MapsLookupResult } from "@/lib/types";
 import { FilePreview } from "@/components/ui/FilePreview";
+import { MapsLinkField } from "./MapsLinkField";
+import { hoursForm, hoursPayload, NO_HOURS, OpeningHoursFields, type HoursForm } from "./OpeningHoursFields";
 import { ErrorLine, INPUT_CLASS, Label, PRIMARY_BUTTON, SECONDARY_BUTTON } from "./ui";
 
 /**
  * Add or edit a place on Explore. Hub team only — the backend rejects anyone
  * else. The category is picked from the list or typed; a new name is created
- * on save. The picture is optional and shown on the cards (Cloudinary crops it
- * to fit, keeping the subject).
+ * on save. Pasting its Google Maps link sets the pin for "Get directions" and,
+ * when the server has a Google Places key, fills in the address and hours.
  */
 export function PlaceForm({
   place,
@@ -32,12 +35,30 @@ export function PlaceForm({
   const [category, setCategory] = useState(place?.category?.name ?? "");
   const [location, setLocation] = useState(place?.location ?? "Malangeni");
   const [description, setDescription] = useState(place?.description ?? "");
+  const [mapsUrl, setMapsUrl] = useState(place?.mapsUrl ?? "");
+  const [latitude, setLatitude] = useState(place?.latitude ?? "");
+  const [longitude, setLongitude] = useState(place?.longitude ?? "");
+  const [listsHours, setListsHours] = useState(() => !!place && hasHours(place));
+  const [hours, setHours] = useState<HoursForm>(() => hoursForm(place ?? {}));
   const [image, setImage] = useState<File | null>(null);
   const [removePicture, setRemovePicture] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const p = place ? `place-${place.id}` : "place-new";
+
+  function applyLookup(found: MapsLookupResult) {
+    if (found.latitude != null && found.longitude != null) {
+      setLatitude(String(found.latitude));
+      setLongitude(String(found.longitude));
+    }
+    if (found.name && !name.trim()) setName(found.name);
+    if (found.address && (!location.trim() || location.trim() === "Malangeni")) setLocation(found.address);
+    if (found.hoursFound) {
+      setHours(hoursForm(found));
+      setListsHours(true);
+    }
+  }
 
   /** The chosen category's id, creating the category when the name is new. */
   async function categoryId(): Promise<string> {
@@ -84,6 +105,10 @@ export function PlaceForm({
         categoryId: await categoryId(),
         location: location.trim(),
         description: description.trim(),
+        mapsUrl: mapsUrl.trim(),
+        latitude: latitude || undefined,
+        longitude: longitude || undefined,
+        ...(listsHours ? hoursPayload(hours) : NO_HOURS),
       };
       saved = place
         ? await api.put<ApiAttraction>(PLACE_ENDPOINTS.place(place.id), payload)
@@ -112,6 +137,11 @@ export function PlaceForm({
       setCategory("");
       setLocation("Malangeni");
       setDescription("");
+      setMapsUrl("");
+      setLatitude("");
+      setLongitude("");
+      setListsHours(false);
+      setHours(hoursForm({}));
       setImage(null);
     }
     setSubmitting(false);
@@ -122,6 +152,15 @@ export function PlaceForm({
     <form onSubmit={(e) => void onSubmit(e)}>
       {error && <ErrorLine>{error}</ErrorLine>}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="sm:col-span-2">
+          <Label htmlFor={`${p}-maps`}>Google Maps link (optional)</Label>
+          <MapsLinkField id={`${p}-maps`} value={mapsUrl} onChange={setMapsUrl} onLookup={applyLookup} />
+          {latitude && longitude && (
+            <p className="mt-1 text-[12px] text-muted">
+              📍 Pin set ({Number(latitude).toFixed(5)}, {Number(longitude).toFixed(5)}) — “Get directions” goes straight there.
+            </p>
+          )}
+        </div>
         <div>
           <Label htmlFor={`${p}-name`}>Name</Label>
           <input
@@ -176,6 +215,16 @@ export function PlaceForm({
             className={INPUT_CLASS}
           />
         </div>
+
+        <fieldset className="sm:col-span-2">
+          <legend className="mb-2 text-[13px] font-medium">Opening hours</legend>
+          <label className="mb-3 inline-flex items-center gap-2 text-[13px]">
+            <input type="checkbox" checked={listsHours} onChange={(e) => setListsHours(e.target.checked)} />
+            This place has opening hours
+          </label>
+          {listsHours && <OpeningHoursFields idPrefix={p} value={hours} onChange={setHours} />}
+        </fieldset>
+
         <div className="sm:col-span-2">
           <Label htmlFor={`${p}-image`}>Picture (optional)</Label>
           {image ? (

@@ -126,6 +126,7 @@ export interface BadgeRequest {
 export interface StaffUser {
   id: string;
   username: string;
+  displayName?: string | null;
   email: string;
   role: Role;
   createdAt?: string;

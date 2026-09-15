@@ -1,11 +1,14 @@
 package co.za.malangeniblog.repository;
 
+import co.za.malangeniblog.domain.Role;
 import co.za.malangeniblog.domain.User;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,4 +24,11 @@ public interface UserRepository extends JpaRepository<User, String> {
     List<User> findByBackstageFalseOrderByCreatedAtDesc(Pageable pageable);
 
     long countByBackstageFalseAndCreatedAtAfter(LocalDateTime since);
+
+    /** Accounts with any of these roles, e.g. the hub team (ADMIN, MODERATOR). */
+    Page<User> findByRoleIn(Collection<Role> roles, Pageable pageable);
+
+    /** The admin's member search: username, Google name or email containing the term. */
+    List<User> findTop10ByUsernameContainingIgnoreCaseOrEmailContainingIgnoreCaseOrDisplayNameContainingIgnoreCaseOrderByUsernameAsc(
+            String username, String email, String displayName);
 }

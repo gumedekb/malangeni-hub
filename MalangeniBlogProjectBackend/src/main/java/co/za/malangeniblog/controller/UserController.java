@@ -1,6 +1,7 @@
 package co.za.malangeniblog.controller;
 
 import co.za.malangeniblog.domain.PublicUserSerializer;
+import co.za.malangeniblog.domain.Role;
 import co.za.malangeniblog.domain.User;
 import co.za.malangeniblog.dto.BanRequest;
 import co.za.malangeniblog.dto.OnboardingRequest;
@@ -19,6 +20,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -78,10 +80,20 @@ public class UserController {
         return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    /** Admin: accounts, optionally only some roles ({@code ?role=ADMIN&role=MODERATOR} for the team). */
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Page<User>> getAllUsers(@PageableDefault(size = 20) Pageable pageable) {
-        return ResponseEntity.ok(userService.getAllUsers(pageable));
+    public ResponseEntity<Page<User>> getAllUsers(
+            @RequestParam(required = false) List<Role> role,
+            @PageableDefault(size = 20) Pageable pageable) {
+        return ResponseEntity.ok(userService.getAllUsers(role, pageable));
+    }
+
+    /** Admin: find a member by username, name or email (at most 10), e.g. to make them a moderator. */
+    @GetMapping("/search")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<User>> searchUsers(@RequestParam String q) {
+        return ResponseEntity.ok(userService.searchUsers(q));
     }
 
     // No self-service username change on purpose (product decision 2026-08-01): a stable handle

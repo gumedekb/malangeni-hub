@@ -6,6 +6,7 @@ import co.za.malangeniblog.repository.AttractionRepository;
 import co.za.malangeniblog.repository.CategoryRepository;
 import co.za.malangeniblog.repository.RatingRepository;
 import co.za.malangeniblog.util.IdGenerator;
+import co.za.malangeniblog.util.OpeningHours;
 import co.za.malangeniblog.util.RepositoryValidationHelper;
 import co.za.malangeniblog.util.ValidationUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,8 @@ public class AttractionService {
         ValidationUtil.validateCoordinates(attraction.getLatitude(), attraction.getLongitude());
         validateFields(attraction);
         requireCategory(attraction.getCategoryId());
+        validateMapsAndHours(attraction);
+        attraction.setMapsUrl(blankToNull(attraction.getMapsUrl()));
         attraction.setName(attraction.getName().trim());
         attraction.setLocation(attraction.getLocation().trim());
         // Pictures only arrive through POST /{id}/image (Cloudinary), never as a typed-in URL.
@@ -96,6 +99,7 @@ public class AttractionService {
     public Attraction updateAttraction(String id, Attraction attraction) {
         RepositoryValidationHelper.validateNotEmpty(id, "Attraction ID");
         validateFields(attraction);
+        validateMapsAndHours(attraction);
         return attractionRepository.findById(id)
                 .map(existing -> {
                     if (!RepositoryValidationHelper.isNullOrEmpty(attraction.getName())) {
@@ -112,6 +116,16 @@ public class AttractionService {
                         requireCategory(attraction.getCategoryId());
                         existing.setCategoryId(attraction.getCategoryId());
                     }
+                    if (attraction.getMapsUrl() != null) {
+                        existing.setMapsUrl(blankToNull(attraction.getMapsUrl()));
+                    }
+                    // The staff form always sends the hours together, so they're replaced as a set.
+                    existing.setWeekdayOpen(attraction.getWeekdayOpen());
+                    existing.setWeekdayClose(attraction.getWeekdayClose());
+                    existing.setSaturdayOpen(attraction.getSaturdayOpen());
+                    existing.setSaturdayClose(attraction.getSaturdayClose());
+                    existing.setSundayOpen(attraction.getSundayOpen());
+                    existing.setSundayClose(attraction.getSundayClose());
                     // The picture only changes through POST/DELETE /{id}/image.
                     // Validate against the pair the attraction will end up with, so updating only
                     // one half of an already-pinned location stays valid but half-pinning does not.
@@ -169,6 +183,19 @@ public class AttractionService {
         RepositoryValidationHelper.validateNotEmpty(id, "Attraction ID");
         return attractionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Attraction not found with id: " + id));
+    }
+
+    /** The Google Maps link and opening hours, checked the same way as the library's. */
+    private void validateMapsAndHours(Attraction attraction) {
+        ValidationUtil.validateOptionalUrl(attraction.getMapsUrl(), "Google Maps link");
+        ValidationUtil.validateMaxLength(attraction.getMapsUrl(), 512, "Google Maps link");
+        OpeningHours.validate(attraction.getWeekdayOpen(), attraction.getWeekdayClose(), "Mon-Fri");
+        OpeningHours.validate(attraction.getSaturdayOpen(), attraction.getSaturdayClose(), "Saturday");
+        OpeningHours.validate(attraction.getSundayOpen(), attraction.getSundayClose(), "Sunday");
+    }
+
+    private static String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
     }
 
     /** A place must point at a real category (Learning, Health...) when one is given. */

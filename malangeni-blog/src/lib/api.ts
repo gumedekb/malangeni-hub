@@ -47,8 +47,10 @@ export const STAFF_ENDPOINTS = {
     `/api/badge-requests?status=${encodeURIComponent(status)}&page=${page}&size=20`,
   approve: (id: string) => `/api/badge-requests/${encodeURIComponent(id)}/approve`,
   reject: (id: string) => `/api/badge-requests/${encodeURIComponent(id)}/reject`,
-  /** Admin only: every account, newest first. */
-  users: (page = 0) => `/api/users?page=${page}&size=20&sort=createdAt,desc`,
+  /** Admin only: the hub team (admins and moderators), longest-serving first. */
+  team: "/api/users?role=ADMIN&role=MODERATOR&size=100&sort=createdAt,asc",
+  /** Admin only: up to 10 members whose username, name or email contains `q` (2+ characters). */
+  searchUsers: (q: string) => `/api/users/search?q=${encodeURIComponent(q)}`,
   /** Admin only: USER ⇄ MODERATOR. ADMIN is set in backend config, never here. */
   role: (id: string) => `/api/users/${encodeURIComponent(id)}/role`,
   /** Verification log: who verified or rejected whom, newest first. */
@@ -107,6 +109,11 @@ export const PLACE_ENDPOINTS = {
   image: (id: string) => `/api/attractions/${encodeURIComponent(id)}/image`,
   /** Public list; POST (hub team) adds one. */
   categories: "/api/categories",
+};
+
+/** Hub team: read a pasted Google Maps link (name, pin, and with Google's API the address and hours). */
+export const MAPS_ENDPOINTS = {
+  lookup: "/api/maps/lookup",
 };
 
 /** Services members offer (plumbing, transport, tutoring…), approved by the hub team. */

@@ -39,6 +39,9 @@ services:
       # Where Render mounts a Secret File, if you use that instead.
       - key: FIREBASE_CREDENTIALS_PATH
         value: /etc/secrets/firebase-key.json
+      # Optional: Google Places API (New) key, so pasting a Google Maps link fills in opening hours.
+      - key: GOOGLE_PLACES_API_KEY
+        sync: false
       # Neon's free tier caps connections; keep the pool small.
       - key: DB_POOL_SIZE
         value: "5"

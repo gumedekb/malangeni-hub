@@ -2,6 +2,8 @@ package co.za.malangeniblog.domain;
 
 import jakarta.persistence.*;
 
+import java.time.LocalTime;
+
 @Entity
 @Table(name = "attractions")
 public class Attraction {
@@ -29,6 +31,24 @@ public class Attraction {
     @ManyToOne
     @JoinColumn(name = "categoryId", insertable = false, updatable = false)
     private Category category;
+
+    /** The place on Google Maps, for "Get directions". */
+    @Column(length = 512)
+    private String mapsUrl;
+
+    // Optional opening hours, same shape as the library: a null pair means closed that day,
+    // all six null means the hours aren't listed (a park, say).
+    private LocalTime weekdayOpen;
+
+    private LocalTime weekdayClose;
+
+    private LocalTime saturdayOpen;
+
+    private LocalTime saturdayClose;
+
+    private LocalTime sundayOpen;
+
+    private LocalTime sundayClose;
 
     @Transient
     private Double averageRating;
@@ -142,6 +162,62 @@ public class Attraction {
 
     public void setRatingCount(Long ratingCount) {
         this.ratingCount = ratingCount;
+    }
+
+    public String getMapsUrl() {
+        return mapsUrl;
+    }
+
+    public void setMapsUrl(String mapsUrl) {
+        this.mapsUrl = mapsUrl;
+    }
+
+    public LocalTime getWeekdayOpen() {
+        return weekdayOpen;
+    }
+
+    public void setWeekdayOpen(LocalTime weekdayOpen) {
+        this.weekdayOpen = weekdayOpen;
+    }
+
+    public LocalTime getWeekdayClose() {
+        return weekdayClose;
+    }
+
+    public void setWeekdayClose(LocalTime weekdayClose) {
+        this.weekdayClose = weekdayClose;
+    }
+
+    public LocalTime getSaturdayOpen() {
+        return saturdayOpen;
+    }
+
+    public void setSaturdayOpen(LocalTime saturdayOpen) {
+        this.saturdayOpen = saturdayOpen;
+    }
+
+    public LocalTime getSaturdayClose() {
+        return saturdayClose;
+    }
+
+    public void setSaturdayClose(LocalTime saturdayClose) {
+        this.saturdayClose = saturdayClose;
+    }
+
+    public LocalTime getSundayOpen() {
+        return sundayOpen;
+    }
+
+    public void setSundayOpen(LocalTime sundayOpen) {
+        this.sundayOpen = sundayOpen;
+    }
+
+    public LocalTime getSundayClose() {
+        return sundayClose;
+    }
+
+    public void setSundayClose(LocalTime sundayClose) {
+        this.sundayClose = sundayClose;
     }
 
     public static class Builder {

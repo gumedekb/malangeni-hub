@@ -45,7 +45,8 @@
 - Services: approve, needs changes (with note), delete, create.
 - Directory listings: approve or hide.
 - Library: edit name, about, location, map link and opening hours.
-- Places: add, edit and delete places on Explore, with category (pick or type new), location, description and picture.
+- Places: add, edit and delete places on Explore, with category (pick or type new), location, description, picture, Google Maps link and opening hours.
+- Pasting a Google Maps link (Library or Places) sets the pin and, with the server's Google Places key, fills in the address and opening hours.
 
 ### Community
 - Groups with join and leave; group pages (`/community/groups/[id]`) with members and posts.
@@ -72,6 +73,7 @@
 ### Local businesses
 - Business listing on `/profile` for confirmed businesses: create, edit, hide.
 - "Local businesses" on Explore: hours with open-now, phone, email and location.
+- Explore place cards: today's hours with open/closed, and a "Get directions" button (to the pin, the Maps link, or a search).
 
 ### Layout & UI
 - Light and dark mode with an animated sun/moon toggle in the header.

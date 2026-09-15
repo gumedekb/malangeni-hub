@@ -57,8 +57,22 @@ public class UserService {
         return userRepository.findByEmail(email);
     }
 
-    public Page<User> getAllUsers(Pageable pageable) {
-        return userRepository.findAll(pageable);
+    /** Every account, or only those holding one of {@code roles} (the Team tab asks for ADMIN, MODERATOR). */
+    public Page<User> getAllUsers(List<Role> roles, Pageable pageable) {
+        return roles == null || roles.isEmpty()
+                ? userRepository.findAll(pageable)
+                : userRepository.findByRoleIn(roles, pageable);
+    }
+
+    /** Up to 10 accounts whose username, Google name or email contains the term (2+ characters). */
+    public List<User> searchUsers(String query) {
+        String term = query == null ? "" : query.trim();
+        if (term.length() < 2) {
+            throw new BadRequestException("Type at least 2 characters to search");
+        }
+        return userRepository
+                .findTop10ByUsernameContainingIgnoreCaseOrEmailContainingIgnoreCaseOrDisplayNameContainingIgnoreCaseOrderByUsernameAsc(
+                        term, term, term);
     }
 
     /**
