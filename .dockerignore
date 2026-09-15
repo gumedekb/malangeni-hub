@@ -1,0 +1,50 @@
+# Everything here is excluded from the build context sent to the Docker daemon.
+# Without this file the entire project - including all of .git/ - is uploaded on
+# every single build, which is slow and ships history into the build environment.
+
+# Build output - the image builds its own from source.
+target/
+build/
+
+# Version control.
+.git/
+.gitattributes
+.gitignore
+
+# IDE / editor.
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.settings/
+.classpath
+.project
+
+# Maven wrapper - unused here (empty .mvn/, no wrapper script); the build stage
+# uses a Maven base image instead.
+.mvn/
+mvnw
+mvnw.cmd
+
+# Docker's own files - not needed inside the build.
+Dockerfile
+.dockerignore
+
+# Project documentation - not needed to compile.
+*.md
+
+# OS noise.
+.DS_Store
+Thumbs.db
+
+# Firebase service account keys - never baked into an image. Cloud Run authenticates
+# through its attached service account instead, so the key is a local-dev-only file.
+firebase-key.json
+*firebase-adminsdk*
+*-adminsdk-*
+
+# Environment variables / local secrets - these are injected at runtime with
+# --env-file or Secret Manager, never copied into the image.
+.env
+.env.*
