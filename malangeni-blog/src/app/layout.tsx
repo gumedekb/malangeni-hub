@@ -3,6 +3,7 @@ import { Fraunces, Inter } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { NavigationProgress } from "@/components/layout/NavigationProgress";
 import { AuthProvider } from "@/lib/auth/AuthContext";
 import { OnboardingGate } from "@/components/auth/OnboardingGate";
 import { NotificationsProvider } from "@/lib/notifications/NotificationsContext";
@@ -62,6 +63,7 @@ export default function RootLayout({
         <AuthProvider>
           <NotificationsProvider>
             <OnboardingGate />
+            <NavigationProgress />
             <Header />
             {children}
             <Footer />

@@ -48,7 +48,7 @@ export function UserMenu() {
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-[calc(100%+10px)] z-30 w-56 overflow-hidden rounded-xl border border-line bg-card shadow-[0_12px_32px_rgba(0,0,0,0.12)]"
+          className="absolute right-0 top-[calc(100%+10px)] z-30 w-56 origin-top-right animate-menu-in motion-reduce:animate-none overflow-hidden rounded-xl border border-line bg-card shadow-[0_12px_32px_rgba(0,0,0,0.12)]"
         >
           {profile ? (
             <>

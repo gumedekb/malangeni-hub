@@ -96,7 +96,7 @@ export function MobileNav() {
           id="mobile-menu"
           role="menu"
           aria-label="Menu"
-          className="absolute left-0 top-[calc(100%+10px)] z-30 w-[264px] max-w-[calc(100vw-24px)] overflow-hidden rounded-2xl border border-line bg-card shadow-[0_16px_44px_rgba(0,0,0,0.16)]"
+          className="absolute left-0 top-[calc(100%+10px)] z-30 w-[264px] origin-top-left animate-menu-in motion-reduce:animate-none max-w-[calc(100vw-24px)] overflow-hidden rounded-2xl border border-line bg-card shadow-[0_16px_44px_rgba(0,0,0,0.16)]"
         >
           <nav className="flex flex-col gap-0.5 p-2">
             {NAV_LINKS.map((link) => {
