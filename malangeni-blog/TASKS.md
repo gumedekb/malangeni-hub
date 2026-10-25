@@ -98,6 +98,17 @@
 ### Events
 - [ ] Add to calendar (.ics).
 
+### Performance
+
+The backend is on Render in Ohio and its database in Brazil, so every call from South Africa
+costs about 0.5 s before any work happens, and the home feed currently takes ~1.9 s (measured
+2026-09-17). The backend tasks cover the server side; these are the frontend's share.
+
+- [ ] Cache API responses — `src/lib/api.ts` has no caching at all, so every visit and every back/forward refetches the full feed. SWR or React Query, or a small in-memory + sessionStorage cache with a 30-60 s TTL.
+- [ ] The home page's four widgets (`FeaturedPlace`, `EventsList`, `CommunityFeed`, `SponsorStrip`) are all client components, so nothing is fetched until the bundle hydrates. Consider fetching the first feed page on the server so the page arrives with content.
+- [ ] `usePostFeed` asks for 9 posts on the home page; the backend's cost is linear in that number. Revisit the size once the backend's per-post queries are fixed.
+- [ ] Revalidate in the background rather than clearing the list on refetch, so navigating back doesn't flash skeletons.
+
 ### Quality
 - [ ] `next/image` for place cards and home feed pictures.
 - [ ] Accessibility pass: focus traps in menus, focus styles, contrast.

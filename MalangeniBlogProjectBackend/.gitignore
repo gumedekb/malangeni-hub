@@ -49,3 +49,7 @@ firebase-key.json
 # stray copies like ".env.local.bak" tracked, which is how credentials get committed.
 .env
 .env.*
+
+# Claude files
+./Claude outputs/gen*.py
+Claude outputs/

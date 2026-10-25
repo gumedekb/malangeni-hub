@@ -110,12 +110,41 @@
 ### Features
 - [ ] Remove or use the News, CommunityProject and ContactMessage APIs — the frontend uses none of them.
 
-### Performance (the app is slow: every query takes ~380 ms to Neon in Brazil, sa-east-1)
-- [ ] Count likes and comments for a whole page in one query each, not 3 queries per post.
-- [ ] Load post authors and groups with the posts (join fetch / entity graph), not one query each.
+### Performance
+
+Measured on 2026-09-17 from South Africa against the live service. The API runs on Render
+**Ohio (US East)** and the Neon database sits in **AWS Sao Paulo (`sa-east-1`)**, so every
+single query crosses to Brazil and back.
+
+- Warm request that touches no database: 0.54 s average, 0.39 s best.
+- One database round trip, Ohio to Sao Paulo: **~0.11-0.12 s** (`/actuator/health` minus the no-query request, and again 1.36 s / 11 queries on the feed).
+- `GET /api/posts` with 3 posts: 1.90 s average, of which 1.36 s is 11 sequential queries.
+- At the shipped page size of 20 that is 62 queries (82 signed in), so roughly **8-10 s**.
+- Cold start after the free plan sleeps: **204 s** to the first byte.
+
+Fix the query count first: it is free, needs no migration, and is worth more than any move.
+
+#### Query count (do this first)
+- [ ] Count likes and comments for a whole page in one grouped query each, not 2-3 queries per post (`PostService.enrich`). 62 queries drops to 3-4, i.e. ~7.6 s to ~0.45 s.
+- [ ] Load post authors and groups with the posts (join fetch / entity graph). `Post.author` and `Post.group` are `@ManyToOne` with no `fetch`, so JPA defaults them to EAGER and issues one query per post.
+- [ ] Check the other services for the same shape (events, shops, attractions, services, groups) — anything with an `enrich`-style per-row loop.
+- [ ] Consider denormalised `like_count` / `comment_count` columns maintained on write, instead of counting on every read.
 - [ ] Cache the signed-in user lookup briefly instead of reading it on every request.
-- [ ] Move the Neon database to a region nearer SA (Frankfurt `eu-central-1` or London `eu-west-2`).
+- [ ] Lower the default feed page size, or make the cost sub-linear, so the count stops driving the page time.
+
+#### Where things run (decide before moving anything)
+- [ ] Decide the target pair. Co-locating the API and the database matters more than being near the users: once the feed is 3-4 queries, one bad database hop costs more than the whole user leg. Measured from SA (TCP handshake, best of 3, includes ~0.03 s DNS): AWS Cape Town `af-south-1` 0.126, London `eu-west-2` 0.228, Frankfurt `eu-central-1` 0.237, Ohio/Virginia `us-east` 0.321, Sao Paulo `sa-east-1` 0.439.
+- [ ] Baseline option, all on current providers: Render **Frankfurt** + Neon **`eu-central-1`**. User leg 0.32 -> 0.24, API-to-database 0.11 -> under 0.005. Neon has no African region (8 AWS regions, Frankfurt and London are the nearest).
+- [ ] Cheaper half-step if the Render service should not move: Neon **`us-east-2` (Ohio)** alone, which parks the database next to the API and kills the 0.11 s hop without recreating anything on Render.
+- [ ] Note: Render's region cannot be changed on an existing service — it has to be deleted and recreated. Neon's region is fixed per project — new project, `pg_dump | psql`, swap `DB_URL`. Both free.
+- [ ] Evaluate free hosts with an actual African region (see the alternatives list): Northflank Sandbox (2 services + 1 database, free forever, lists an `africa-south` region — confirm it is on the free plan), or an Oracle Cloud Always Free Arm VM in `af-johannesburg-1` running both Spring Boot and Postgres on one box. Ruled out: Google Cloud Run `africa-south1` (Tier 2 region, excluded from the free tier), Supabase (no `af-south-1`), Fly.io (no free tier for new accounts).
+
+#### Cold start and config drift
+- [ ] Keep the Render service awake: a scheduled `GET /actuator/health` every 10 minutes (a GitHub Actions cron is free on a public repo).
 - [ ] Keep Neon awake or accept the cold start after it suspends (free tier sleeps when idle).
+- [ ] Find out why the cold start is 204 s when a Spring Boot start is normally 40-60 s — read the Render deploy log before tuning any flags.
+- [ ] `render.yaml` describes a service called `malangeni-hub-api`, which does not exist; the live one is `malangeni-hub`. Nothing in that file is applied, so `JAVA_OPTS`, `DB_POOL_SIZE` and the region are not in effect — set them on the live service and fix the name in the file.
+- [ ] `render.yaml` says `region: virginia`; the service actually runs in Ohio. Correct it so a rebuild from the blueprint does not move the service.
 - [ ] Turn off `show-sql` and DEBUG web logging locally.
 - [ ] Decide `spring.jpa.open-in-view`.
 
